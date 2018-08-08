@@ -1,0 +1,20 @@
+<?php
+$phone=$_POST['phone'];
+$type=$_POST['type'];
+$password=$_POST['password'];
+require_once("model.php");
+$models=new model;
+$return=$models->login($phone,$password,$type);
+if($return == null || count($return) == 0 ) {
+header("Location: login.php?r=Sorry+could+not+login.");		
+}else {
+$count=count($return);
+for($x=0;$x<$count;$x++) {	
+$_SESSION['name']=$return[$x]['name'];	
+$_SESSION['email']=$return[$x]['email'];	
+$_SESSION['phone']=$return[$x]['phone'];	
+$_SESSION['password']=$return[$x]['password'];
+}
+header("Location: index.php");	
+}		
+?>

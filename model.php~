@@ -1,0 +1,346 @@
+<?php
+class model{
+public $conn=null;
+function __construct(){
+if (session_status() == PHP_SESSION_NONE ) {
+    session_start();
+}	
+include("connect.php");
+$this->conn=connect();
+}
+	
+public function register($name,$type,$phone,$password) {
+$return =false;
+if($this->conn != null) {
+$stmt = $this->conn->prepare("INSERT INTO admin (name,phone, type,password)
+    VALUES (:name, :phone, :type, :password)");
+    $stmt->bindParam(':name', $name);
+    $stmt->bindParam(':phone', $phone);
+    $stmt->bindParam(':type', $type);
+    $stmt->bindParam(':password', $password);
+    $this->setNotification("New system user was added.");
+    $stmt->execute();
+    $return =true;
+}
+return $return;
+}
+
+
+
+public function advice($advice,$type) {
+$return =false;
+if($this->conn != null) {
+$stmt = $this->conn->prepare("INSERT INTO advice (type,message)
+    VALUES (:type, :message)");
+    $stmt->bindParam(':type', $type);
+    $stmt->bindParam(':message', $advice);
+    $stmt->execute();
+    $this->setNotification("New advice added");
+    $return =true;
+}
+return $return;
+}
+
+public function getAdvice($id){
+    $return=null;
+    $stmt = $this->conn->prepare("SELECT * FROM advice WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();	
+    return $return; 
+}
+
+public function updateadvice($id,$advice,$type){
+$return =false;
+if($this->conn != null) {
+$stmt = $this->conn->prepare("UPDATE advice SET message=:message, type=:type WHERE id=:id");
+    $stmt->bindParam(':message', $advice);
+    $stmt->bindParam(':type', $type);
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+        $this->setNotification("Advice updated");
+
+    $return =true;
+    
+}
+return $return;
+}
+
+public function adviceDelete($id) {
+    $stmt = $this->conn->prepare("DELETE FROM advice WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    $this->setNotification("Advice deleted");
+}
+
+public function setNotification($message) {
+$return =false;
+if($this->conn != null) {
+$stmt = $this->conn->prepare("INSERT INTO notifications (message)
+    VALUES (:message)");
+    $stmt->bindParam(':message', $message);
+    $stmt->execute();
+    $return =true;
+}
+return $return;
+}
+
+public function ulandlord($name,$email,$phone,$password,$address,$id) {
+$return =false;
+if($this->conn != null) {
+$stmt = $this->conn->prepare("UPDATE landlord SET name=:name,phone =:phone, email=:email,password=:password,address =:address WHERE id= :id");
+    $stmt->bindParam(':name', $name);
+    $stmt->bindParam(':phone', $phone);
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':id', $id);
+    $stmt->bindParam(':address', $address);
+    $stmt->bindParam(':password', $password);
+    $stmt->execute();
+    $return =true;
+}
+return $return;
+}
+
+public function login($phone,$password){
+    $return=null;
+    $stmt = $this->conn->prepare("SELECT * FROM admin WHERE phone=:phone AND password=:password");
+    $stmt->bindParam(':phone', $phone);
+    $stmt->bindParam(':password', $password);
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();	
+    $this->setNotification("{$phone} logged in");
+    return $return; 
+}
+
+public function getAllClients() {
+    $stmt = $this->conn->prepare("SELECT * FROM user");
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getUserDisease($id){
+	$type="None";
+    $stmt = $this->conn->prepare("SELECT * FROM user_disease WHERE uid=:uid");
+    $stmt->bindParam(':uid', $id);
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    if(count($return) > 0) {
+    	$type=$return[0]['type'];
+    	}
+    return $type;
+}
+
+public function getAllAdvice() {
+    $stmt = $this->conn->prepare("SELECT * FROM advice");
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getSystem() {
+    $stmt = $this->conn->prepare("SELECT * FROM system");
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getAllStudents() {
+    $stmt = $this->conn->prepare("SELECT * FROM student");
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getAllLandlords() {
+    $stmt = $this->conn->prepare("SELECT * FROM landlord");
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getAllAdmins() {
+    $stmt = $this->conn->prepare("SELECT * FROM admin");
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getNotifications() {
+    $stmt = $this->conn->prepare("SELECT * FROM notifications ORDER BY id DESC LIMIT 6");
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getLandlord($id) {
+    $stmt = $this->conn->prepare("SELECT * FROM landlord WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+	
+
+public function updateuser($name,$type,$phone,$password,$id) {
+$stmt = $this->conn->prepare("UPDATE admin SET name=:name,password=:password,phone=:phone,type=:type WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->bindParam(':name', $name);
+    $stmt->bindParam(':type', $type);
+    $stmt->bindParam(':phone', $phone);
+    $stmt->bindParam(':password', $password);
+    $this->setNotification("{$name}'s profile updated.");
+    $stmt->execute();
+    return true;
+}
+
+public function updateclient($name,$type,$phone,$password,$id) {
+$stmt = $this->conn->prepare("UPDATE user SET name=:name,password=:password,phone=:phone WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->bindParam(':name', $name);
+    $stmt->bindParam(':phone', $phone);
+    $stmt->bindParam(':password', $password);
+    $this->setNotification("Client, {$name}, profile updated");
+    $stmt->execute();
+
+
+$stmt2 = $this->conn->prepare("UPDATE user_disease SET type=:type WHERE uid=:id");
+    $stmt2->bindParam(':type', $type);
+     $stmt2->bindParam(':id', $id);
+    $stmt2->execute();
+
+
+
+    return true;
+}
+
+public function deleteAdmin($id) {
+    $stmt = $this->conn->prepare("DELETE FROM admin WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    $this->setNotification("An administrator Account was deleted");
+    return $return;
+}
+
+public function deleteClient($id) {
+    $stmt = $this->conn->prepare("DELETE FROM user WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    $this->setNotification("Client account deleted");
+    return $return;
+}
+
+public function updateSystem($name,$logo) {
+    $stmt = $this->conn->prepare("UPDATE system SET name =:name, logo=:logo WHERE id=:id");
+    $id=1;
+    $stmt->bindParam(':id', $id);
+    $stmt->bindParam(':name', $name);
+    $stmt->bindParam(':logo', $logo);
+    $stmt->execute();
+    $this->setNotification("System profile updated");
+    return $return;
+}
+
+public function getAdmin($id) {
+    $stmt = $this->conn->prepare("SELECT * FROM admin WHERE email=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getUser($id) {
+    $stmt = $this->conn->prepare("SELECT * FROM admin WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getClient($id) {
+    $stmt = $this->conn->prepare("SELECT * FROM user WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function getAllRooms($uid){
+	 $stmt = $this->conn->prepare("SELECT asset.*,landlord.name AS landlord FROM asset,landlord WHERE asset.user_id=landlord.id");	
+     if($uid != "") {      
+    $stmt = $this->conn->prepare("SELECT asset.*,landlord.name AS landlord FROM asset,landlord WHERE asset.user_id=landlord.id AND landlord.id= :uid");
+    $stmt->bindParam(':uid', $uid);
+    }	 
+    $stmt->execute();
+    $stmt->setFetchMode(PDO::FETCH_ASSOC); 
+    $return = $stmt->fetchAll();
+    return $return;
+}
+
+public function ldelete($id) {
+    $stmt = $this->conn->prepare("DELETE FROM landlord WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+}
+
+public function rdelete($id) {
+    $stmt = $this->conn->prepare("DELETE FROM asset WHERE id=:id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+}
+
+public function addAsset($landlord,$images,$price,$per,$description){
+$return =false;
+if($this->conn != null) {
+	$status='a';
+$stmt = $this->conn->prepare("INSERT INTO asset (user_id,images,description,status,price,per)
+    VALUES (:user, :images, :description, :status,:price,:per)");
+    $stmt->bindParam(':user', $landlord);
+    $stmt->bindParam(':images', $images);
+    $stmt->bindParam(':description', $description);
+    $stmt->bindParam(':status', $status);
+    $stmt->bindParam(':price', $price);
+     $stmt->bindParam(':per', $per);
+    $stmt->bindParam(':description', $description);
+    $stmt->execute();
+    $return =true;
+}
+return $return;
+}
+public function uroom($landlord,$price,$per,$description,$id){
+$return =false;
+if($this->conn != null) {
+$stmt = $this->conn->prepare("UPDATE asset SET user_id=:landlord,price =:price,per=:per,description=:description WHERE id= :id");
+    $stmt->bindParam(':landlord', $landlord);
+    $stmt->bindParam(':price', $price);
+    $stmt->bindParam(':per', $per);
+    $stmt->bindParam(':id', $id);
+    $stmt->bindParam(':description', $description);
+    $stmt->execute();
+    $return =true;
+}
+return $return;
+}
+
+public function dateFormater($date){
+$date = new DateTime($date);
+return $date->format('F j, Y');
+}
+
+}
+?>

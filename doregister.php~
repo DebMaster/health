@@ -1,0 +1,19 @@
+<?php
+$name=$_POST['name'];
+$type=$_POST['type'];
+$phone=$_POST['phone'];
+$password=$_POST['password'];
+require_once("model.php");
+$models=new model;
+$return=$models->register($name,$type,$phone,$password);
+if($return == null) {
+header("Location: register.php?r=Sorry+could+not+register+user.");		
+}else {
+$_SESSION['name']=$name;	
+$_SESSION['type']=$type;	
+$_SESSION['phone']=$phone;	
+$_SESSION['password']=$password;
+header("Location: users.php?r=User+successfully+added");	
+}		
+
+?>
